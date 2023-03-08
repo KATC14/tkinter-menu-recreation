@@ -13,14 +13,14 @@ class MainMenu(tkinter.Frame):
 		super().__init__(master, *args, **kwargs)
 
 		self.parent = master
-		self.parent.grid_rowconfigure(0, weight=100)
-		self.parent.grid_columnconfigure(0, weight=100)
+		self.parent.grid_rowconfigure(0, weight=1)
+		self.parent.grid_columnconfigure(0, weight=1)
 		self.cascade_opened = False
 		self.column = -1
 		self.row    = -1
 		self.config(bg='white')
 		if not isinstance(self.parent, tkinter.Tk):
-			self.config(bg='#f0f0f0', padx=18)
+			self.config(bg='#f0f0f0')
 		self.grid(sticky='NEW', column=self.column+1, row=self.row+1)
 
 	def _another_hover(self, event):
@@ -193,6 +193,7 @@ class MainMenu(tkinter.Frame):
 		self.bind("<FocusOut>", self._menu_lose_focus)
 
 		if isinstance(label.master.master, tkinter.Toplevel):
+			label.config(width=10)
 			label.bind("<Enter>", lambda e: self._cascade_hover(e, menu))
 			label.bind("<Leave>", lambda e: self._cascade_hover(e, menu))
 		else:
