@@ -1,6 +1,12 @@
 # tkinter-menu-recreation
 
-wasnt happy with the commands/binds that tkinter.menu provided so I created my own menu using tkinter.Toplevel for drop down menus, tkinter.Frame for the base and parent of every Toplevel and tkitner.Label on the Frame
+wasn't happy with the commands/binds that tkinter.menu provided so I created my own menu using tkinter.Toplevel for drop down menus, tkinter.Frame for the base and parent of every Toplevel and tkitner.Label on the Frame
+
+uses .grid on column and row 0 sadly
+
+all the binds are `<Enter>`, `<Leave>` and `<Button-1>`
+
+add_command and add_cascade return the label it creates incase more binding is wanted
 
 # example
 ```python
