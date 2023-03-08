@@ -197,6 +197,7 @@ class MainMenu(tkinter.Frame):
 			label.bind("<Leave>", lambda e: self._cascade_hover(e, menu))
 		else:
 			label.bind("<Button-1>", lambda e: self._open_menu(e, menu))
+		return label
 
 	def add_command(self, label=None, command=None, *args, **kwargs):
 		label = tkinter.Label(self, text=label, bg='white', *args, **kwargs)
