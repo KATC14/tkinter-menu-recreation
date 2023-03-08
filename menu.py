@@ -58,7 +58,7 @@ class MainMenu(tkinter.Frame):
 			for i in self.winfo_children():
 				if isinstance(i, tkinter.Label):
 					if i == widget:
-						i.config(bg='#cce8ff', relief='ridge')
+						i.config(bg='#cce8ff', relief='groove')
 					else:
 						i.config(bg='white', relief='flat')
 
@@ -177,7 +177,7 @@ class MainMenu(tkinter.Frame):
 				self.cascade_opened = True
 				menmas.wm_deiconify()
 				menmas.geometry(f"+{widget.winfo_rootx()}+{widget.winfo_rooty()+21}")
-				widget.config(bg='#cce8ff', relief='ridge')
+				widget.config(bg='#cce8ff', relief='groove')
 
 	def _menu_lose_focus(self, event):
 		self.cascade_opened = False
@@ -208,7 +208,7 @@ class MainMenu(tkinter.Frame):
 			self.row += 1
 			if self.column >= 0:
 				self.column -= 1
-			self.config(borderwidth=1, relief='ridge')
+			self.config(borderwidth=2, relief='groove')
 			label.config(bg='#f0f0f0')
 		else:
 			self.column += 1
