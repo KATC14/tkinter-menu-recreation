@@ -5,7 +5,7 @@ from tkinter.ttk import *
 class MainMenu(tkinter.Frame):
 	def __init__(self, master, *args, **kwargs):
 
-		if not isinstance(master, tkinter.Tk):
+		if isinstance(master, tkinter.Frame):
 			label = tkinter.Label(master, bg='white')
 			master = tkinter.Toplevel(label, bg='#f0f0f0', *args, **kwargs)
 			master.overrideredirect(True)
@@ -117,8 +117,6 @@ class MainMenu(tkinter.Frame):
 		for i in self._get_masters(widget):
 			if isinstance(i, tkinter.Toplevel):
 				i.withdraw()
-			elif isinstance(i.master.master, tkinter.Tk):
-				i.config(bg='white', relief='flat')
 
 		command(event)
 
