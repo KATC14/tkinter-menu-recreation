@@ -6,7 +6,8 @@ class MainMenu(tkinter.Frame):
 	def __init__(self, master, *args, **kwargs):
 
 		if not isinstance(master, tkinter.Tk):
-			master = tkinter.Toplevel(master, *args, **kwargs)
+			label = tkinter.Label(master, bg='white')
+			master = tkinter.Toplevel(label, bg='#f0f0f0', *args, **kwargs)
 			master.overrideredirect(True)
 			master.withdraw()
 
@@ -28,50 +29,32 @@ class MainMenu(tkinter.Frame):
 		# 7 is Enter
 		evetype = int(event.type)
 		widget = event.widget
-		toplevel = None
+		toplevel = widget.winfo_children()[0]
 
 		# Enter
 		if   evetype == 7:
 			self._remove_siblings(widget.master)
-			widget.config(bg='#e5f3ff')
+			widget.config(bg='#e5f3ff')#e5f3ff
 			widget.focus()
 		# Leave
 		elif evetype == 8:
-			widget.config(bg='white')
+			widget.config(bg='white', relief='flat')
 
-		# Enter
 		if evetype == 7 and self.cascade_opened:
-			a = self.winfo_children()
-			for i in a:
-				if i.master == widget.master:
-					for x in i.master.winfo_children():
-						if isinstance(x, tkinter.Toplevel):
-							toplevel = x
-						elif isinstance(x, tkinter.Label) and toplevel:
-							if widget.cget('text') == x.cget('text'):
-								toplevel.wm_deiconify()
-								toplevel.geometry(f"+{event.widget.winfo_rootx()}+{event.widget.winfo_rooty()+21}")
-								break
-					break
-		if self.cascade_opened:
-			widget = event.widget
-			for i in self.winfo_children():
-				if isinstance(i, tkinter.Label):
-					if i == widget:
-						i.config(bg='#cce8ff', relief='groove')
-					else:
-						i.config(bg='white', relief='flat')
+			widget.config(bg='#cce8ff', relief='groove')
+			toplevel.wm_deiconify()
+			toplevel.geometry(f"+{event.widget.winfo_rootx()}+{event.widget.winfo_rooty()+21}")
 
-	def _cascade_hover(self, event, menu):
+	def _cascade_hover(self, event):
 		evetype = int(event.type)
 		widget = event.widget
-		menmas = menu.master
+		toplevel = widget.winfo_children()[0]
 
 		# Enter
 		if   evetype == 7:
-			self._remove_siblings(menmas.master)
-			menmas.wm_deiconify()
-			menmas.geometry(f"+{event.widget.winfo_rootx()+widget.winfo_width()}+{event.widget.winfo_rooty()}")
+			self._remove_siblings(widget.master)
+			toplevel.wm_deiconify()
+			toplevel.geometry(f"+{event.widget.winfo_rootx()+widget.winfo_width()}+{event.widget.winfo_rooty()}")
 			widget.config(bg='#0078d7')#0078d7
 		# Leave
 		elif evetype == 8:
@@ -82,24 +65,20 @@ class MainMenu(tkinter.Frame):
 		# 7 is Enter
 		evetype = int(event.type)
 		widget = event.widget
-		# Leave
-		if evetype == 8:
-			if isinstance(self.parent, tkinter.Toplevel):
-				widget.config(bg='#f0f0f0')#f0f0f0
-			else:
-				widget.config(bg='white')#white
+
 		# Enter
-		elif evetype == 7:
+		if   evetype == 7:
 			self._remove_siblings(widget.master)
-
-			for i in widget.master.winfo_children():
-				if isinstance(i, tkinter.Label) and not isinstance(i.master.master, tkinter.Toplevel):
-					i.config(bg='white', relief='flat')
-
 			if isinstance(self.parent, tkinter.Toplevel):
 				widget.config(bg='#0078d7')#0078d7
 			else:
-				widget.config(bg='#cce8ff')#cce8ff
+				widget.config(bg='#e5f3ff')#e5f3ff
+		# Leave
+		elif evetype == 8:
+			if isinstance(self.parent, tkinter.Toplevel):
+				widget.config(bg='#f0f0f0')#f0f0f0
+			else:
+				widget.config(bg='white')
 
 	def _get_children(self, widget):
 		alist = []
@@ -107,7 +86,7 @@ class MainMenu(tkinter.Frame):
 		while True:
 			if not a:
 				break
-			a = a[0].winfo_children()
+			a = a[-1].winfo_children()
 			for i in a:
 				if isinstance(i, tkinter.Frame):
 					a = [i, ]
@@ -119,85 +98,77 @@ class MainMenu(tkinter.Frame):
 	def _get_masters(self, widget):
 		alist = []
 		a = widget
-		b = None
 		while True:
-			b = a
 			a = a.master
-			if not a.master:
-				if not alist:
-					return [b, ]
-				else:
-					return alist
-			elif not a:
-				break
-			else:
+			if not a: break
+			if not isinstance(a, tkinter.Tk):
 				alist.append(a)
 		return alist
 
-	def _remove_siblings(self, siblings):
-		for i in siblings.winfo_children():
+	def _remove_siblings(self, widget):
+		for i in widget.winfo_children():
 			if isinstance(i, tkinter.Toplevel):
 				i.withdraw()
-				for x in self._get_children(i):
-					x.withdraw()
+			for x in self._get_children(i):
+				x.withdraw()
 
 	def _do_command(self, event, command):
 		widget = event.widget
-		widmas = widget.master.master
-		topmost = self._get_masters(self)
-		topmost[-1].cascade_opened = False
-
-		for i in topmost[-1].winfo_children():
-			if not isinstance(i, tkinter.Toplevel):
+		for i in self._get_masters(widget):
+			if isinstance(i, tkinter.Toplevel):
+				i.withdraw()
+			elif isinstance(i.master.master, tkinter.Tk):
 				i.config(bg='white', relief='flat')
-	
-		# removes all open toplevels
-		if isinstance(widmas, tkinter.Toplevel):
-			widmas.withdraw()
-			for i in topmost:
-				if isinstance(i, tkinter.Toplevel):
-					i.withdraw()
 
 		command(event)
 
-	def _open_menu(self, event, menu):
+	def _open_menu(self, event):
 		widget = event.widget
-		menmas = menu.master
+		toplevel = widget.winfo_children()[0]
 
+		# opens nested cascade
 		if isinstance(self.parent, tkinter.Toplevel):
 			self.cascade_opened = True
-			menmas.wm_deiconify()
-			menmas.geometry(f"+{event.widget.winfo_rootx()+widget.winfo_width()}+{event.widget.winfo_rooty()}")
+			toplevel.wm_deiconify()
+			toplevel.geometry(f"+{event.widget.winfo_rootx()+widget.winfo_width()}+{event.widget.winfo_rooty()}")
 		else:
-			if menmas.winfo_viewable():
+			if toplevel.winfo_viewable():
 				self.cascade_opened = False
-				menmas.withdraw()
+				toplevel.withdraw()
 				widget.config(bg='white', relief='flat')
 			else:
 				self.cascade_opened = True
-				menmas.wm_deiconify()
-				menmas.geometry(f"+{widget.winfo_rootx()}+{widget.winfo_rooty()+21}")
+				toplevel.wm_deiconify()
+				toplevel.geometry(f"+{widget.winfo_rootx()}+{widget.winfo_rooty()+21}")
 				widget.config(bg='#cce8ff', relief='groove')
 
 	def _menu_lose_focus(self, event):
 		self.cascade_opened = False
 		self._remove_siblings(event.widget)
-		for i in self.winfo_children():
-			if not isinstance(i, tkinter.Toplevel):
-				i.config(bg='white', relief='flat')
 
 	def add_cascade(self, label, menu, *args, **kwargs):
-		label = self.add_command(label=label, *args, **kwargs)
+		text = label
+		label = menu.master.master
+		label.config(text=text, *args, **kwargs)
 		label.bind("<Enter>", lambda e: self._another_hover(e))
 		label.bind("<Leave>", lambda e: self._another_hover(e))
 		self.bind("<FocusOut>", self._menu_lose_focus)
+		self.master.bind("<Configure>", lambda e: self._remove_siblings(self))
 
-		if isinstance(label.master.master, tkinter.Toplevel):
-			label.config(width=10)
-			label.bind("<Enter>", lambda e: self._cascade_hover(e, menu))
-			label.bind("<Leave>", lambda e: self._cascade_hover(e, menu))
+		label.bind("<Button-1>", self._open_menu)
+
+		if isinstance(self.parent, tkinter.Toplevel):
+			label.bind("<Enter>", self._cascade_hover)
+			label.bind("<Leave>", self._cascade_hover)
+			label.config(width=10, bg='#f0f0f0')
+			self.row += 1
 		else:
-			label.bind("<Button-1>", lambda e: self._open_menu(e, menu))
+			self.column += 1
+
+		column = self.column + 1 if self.column < 0 else self.column
+		row    = self.row    + 1 if self.row    < 0 else self.row
+
+		label.grid(sticky='nsew', column=column, row=row)
 		return label
 
 	def add_command(self, label=None, command=None, *args, **kwargs):
@@ -216,7 +187,7 @@ class MainMenu(tkinter.Frame):
 
 		column = self.column + 1 if self.column < 0 else self.column
 		row    = self.row    + 1 if self.row    < 0 else self.row
-		
+
 		label.grid(sticky='nsew', column=column, row=row)
 
 		if command:
@@ -321,6 +292,7 @@ class _Application():
 		print('state ', event.state)
 		print('type  ', event.type)
 		print('widget', event.widget)
+		print('master', event.widget.master.master.master)
 		print('widget', event.widget.cget('text'))
 		event.widget.config(text='text changed!')
 		print('new text', event.widget.cget('text'))
