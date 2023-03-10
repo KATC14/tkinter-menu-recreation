@@ -2,11 +2,13 @@
 
 wasn't happy with the commands/binds that tkinter.menu provided so I created my own menu using tkinter.Toplevel for drop down menus, tkinter.Frame for the base and parent of every Toplevel and tkitner.Label on the Frame
 
-uses .grid on column and row 0 sadly
+add_command and add_cascade return the label it creates incase more binding is wanted
+
+##  sadly
+root has bind `<Configure>` to remove cascades when moving window
+it has to .grid on root to column and row 0
 
 all the binds are `<Enter>`, `<Leave>` and `<Button-1>`
-
-add_command and add_cascade return the label it creates incase more binding is wanted
 
 # example
 ```python
