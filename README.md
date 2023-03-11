@@ -4,7 +4,31 @@ wasn't happy with the commands/binds that tkinter.menu provided so I created my 
 
 add_command and add_cascade return the label it creates incase more binding is wanted
 
-##  sadly
+## Drop down menu
+root has bind `<FocusOut>` to remove context menu
+# example
+```python
+def test(event):
+    print('state ', event.state)
+    print('type  ', event.type)
+    print('widget', event.widget)
+    print('widget', event.widget.cget('text'))
+
+root = tkinter.Tk()
+
+dropdown = Dropdown(root)
+dropdown.add_command(label='command', command=test)
+
+newmenu = MainMenu(dropdown)
+newmenu.add_command(label='command one', command=test)
+newmenu.add_command(label='command two', command=test)
+dropdown.add_cascade(label="cascade", menu=newmenu)
+
+root.mainloop()
+```
+
+## menu recreation
+
 root has bind `<Configure>` to remove cascades when moving window
 it has to .grid on root to column and row 0
 
