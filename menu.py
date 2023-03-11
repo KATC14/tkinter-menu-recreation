@@ -192,19 +192,19 @@ class MainMenu(tkinter.Frame):
 			label.bind('<Button-1>', lambda e: self._do_command(e, command))
 		return label
 
-class Dropdown(MainMenu):
-	def __init__(self, master, *args, **kwargs) -> None:
-		master = tkinter.Toplevel()
-		master.withdraw()
-		master.overrideredirect(True)
-		super().__init__(master, *args, **kwargs)
-		self.parent = master
-		self.parent.master.bind('<Button-3>', self._open_menu)
-		self.parent.bind('<FocusOut>', lambda e: e.widget.withdraw())
-	def _open_menu(self, event):
-		self.parent.wm_deiconify()
-		self.parent.geometry(f"+{event.x_root}+{event.y_root}")
-		self.parent.focus()
+#class Dropdown(MainMenu):
+#	def __init__(self, master, *args, **kwargs) -> None:
+#		master = tkinter.Toplevel()
+#		master.withdraw()
+#		master.overrideredirect(True)
+#		super().__init__(master, *args, **kwargs)
+#		self.parent = master
+#		self.parent.master.bind('<Button-3>', self._open_menu)
+#		self.parent.bind('<FocusOut>', lambda e: e.widget.withdraw())
+#	def _open_menu(self, event):
+#		self.parent.wm_deiconify()
+#		self.parent.geometry(f"+{event.x_root}+{event.y_root}")
+#		self.parent.focus()
 
 class _Application():
 	def __init__(self):
@@ -212,8 +212,8 @@ class _Application():
 		root.geometry('200x50')
 		tkinter.Label(root, text='label on root').grid(sticky='S', column=0, row=1)
 
-		dropdown = Dropdown(root)
-		dropdown.add_command(label='one', command=self.test)
+#		dropdown = Dropdown(root)
+#		dropdown.add_command(label='one', command=self.test)
 	
 		menu = MainMenu(root)
 		menu.add_command(label='one', command=self.test)
