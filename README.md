@@ -3,7 +3,7 @@
 wasn't happy with the commands/binds that tkinter.menu provided so I created my own menu using tkinter.Toplevel for drop down menus, tkinter.Frame for the base and parent of every Toplevel and tkitner.Label on the Frame
 
 add_command and add_cascade return the label it creates incase more binding is wanted
-
+<!--
 ## Drop down menu
 root has bind `<FocusOut>` to remove context menu
 # example
@@ -26,7 +26,7 @@ dropdown.add_cascade(label="cascade", menu=newmenu)
 
 root.mainloop()
 ```
-
+-->
 ## menu recreation
 
 root has bind `<Configure>` to remove cascades when moving window
