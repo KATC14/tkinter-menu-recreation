@@ -213,12 +213,12 @@ class _Application():
 		tkinter.Label(root, text='label on root').grid(sticky='S', column=0, row=1)
 
 		dropdown = Dropdown(root)
-		dropdown.add_command(label='one', command=self.test)
+		dropdown.add_command(label='command', command=self.test)
 
 		newdrop = Dropdown(dropdown)
-		newdrop.add_command(label='two', command=self.test)
-		newdrop.add_command(label='three', command=self.test)
-		dropdown.add_cascade(label="misc", menu=newdrop)
+		newdrop.add_command(label='command one', command=self.test)
+		newdrop.add_command(label='command two', command=self.test)
+		dropdown.add_cascade(label="cascade", menu=newdrop)
 	
 		menu = MainMenu(root)
 		menu.add_command(label='one', command=self.test)
