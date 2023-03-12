@@ -3,9 +3,9 @@ from tkinter.ttk import *
 
 
 class MainMenu(tkinter.Frame):
-	def __init__(self, master, *args, **kwargs):
+	def __init__(self, master, isdropdown=False, *args, **kwargs):
 
-		if isinstance(master, tkinter.Frame):
+		if isinstance(master, tkinter.Frame) or isdropdown:
 			label = tkinter.Label(master, bg='white')
 			master = tkinter.Toplevel(label, bg='#f0f0f0', *args, **kwargs)
 			master.overrideredirect(True)
@@ -192,19 +192,19 @@ class MainMenu(tkinter.Frame):
 			label.bind('<Button-1>', lambda e: self._do_command(e, command))
 		return label
 
-#class Dropdown(MainMenu):
-#	def __init__(self, master, *args, **kwargs) -> None:
-#		master = tkinter.Toplevel()
-#		master.withdraw()
-#		master.overrideredirect(True)
-#		super().__init__(master, *args, **kwargs)
-#		self.parent = master
-#		self.parent.master.bind('<Button-3>', self._open_menu)
-#		self.parent.bind('<FocusOut>', lambda e: e.widget.withdraw())
-#	def _open_menu(self, event):
-#		self.parent.wm_deiconify()
-#		self.parent.geometry(f"+{event.x_root}+{event.y_root}")
-#		self.parent.focus()
+class Dropdown(MainMenu):
+	def __init__(self, master, *args, **kwargs) -> None:
+		super().__init__(master, True, *args, **kwargs)
+		master.bind('<Button-3>', self._open_menu)
+		self.master.bind('<FocusOut>', self._remove_dropdown)
+	def _remove_dropdown(self, event):
+		widget = event.widget
+		widget.withdraw()
+		self._remove_siblings(widget)
+	def _open_menu(self, event):
+		self.master.wm_deiconify()
+		self.master.geometry(f"+{event.x_root}+{event.y_root}")
+		self.master.focus()
 
 class _Application():
 	def __init__(self):
@@ -212,8 +212,13 @@ class _Application():
 		root.geometry('200x50')
 		tkinter.Label(root, text='label on root').grid(sticky='S', column=0, row=1)
 
-#		dropdown = Dropdown(root)
-#		dropdown.add_command(label='one', command=self.test)
+		dropdown = Dropdown(root)
+		dropdown.add_command(label='one', command=self.test)
+
+		newdrop = Dropdown(dropdown)
+		newdrop.add_command(label='two', command=self.test)
+		newdrop.add_command(label='three', command=self.test)
+		dropdown.add_cascade(label="misc", menu=newdrop)
 	
 		menu = MainMenu(root)
 		menu.add_command(label='one', command=self.test)
