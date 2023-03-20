@@ -70,13 +70,14 @@ class MainMenu(tkinter.Frame):
 		if   evetype == 7:
 			self._remove_siblings(widget.master)
 			if isinstance(self.parent, tkinter.Toplevel):
+				self.background = widget.cget('bg')
 				widget.config(bg='#0078d7')#0078d7
 			else:
 				widget.config(bg='#e5f3ff')#e5f3ff
 		# Leave
 		elif evetype == 8:
 			if isinstance(self.parent, tkinter.Toplevel):
-				widget.config(bg='#f0f0f0')#f0f0f0
+				widget.config(bg=self.background)#f0f0f0
 			else:
 				widget.config(bg='white')
 
@@ -213,20 +214,20 @@ class _Application():
 		tkinter.Label(root, text='label on root').grid(sticky='S', column=0, row=1)
 
 		dropdown = Dropdown(root)
-		dropdown.add_command(label='command', command=self.test)
+		dropdown.add_command(label='one', command=self.test)
 
 		newdrop = Dropdown(dropdown)
-		newdrop.add_command(label='command one', command=self.test)
-		newdrop.add_command(label='command two', command=self.test)
-		dropdown.add_cascade(label="cascade", menu=newdrop)
-	
-		menu = MainMenu(root)
-		menu.add_command(label='one', command=self.test)
+		newdrop.add_command(label='two', command=self.test)
+		newdrop.add_command(label='three', command=self.test)
+		dropdown.add_cascade(label="misc", menu=newdrop)
 
-		newmenu = MainMenu(menu)
+		amenu = MainMenu(root)
+		amenu.add_command(label='one', command=self.test)
+
+		newmenu = MainMenu(amenu)
 		newmenu.add_command(label='two', command=self.test)
 		newmenu.add_command(label='three', command=self.test)
-		menu.add_cascade(label="misc", menu=newmenu)
+		amenu.add_cascade(label="misc", menu=newmenu)
 
 		nest = MainMenu(newmenu)
 		nest.add_command(label='four', command=self.test)
@@ -249,10 +250,10 @@ class _Application():
 		nest3.add_cascade(label="nest nest nest", menu=nest4)
 
 
-		one = MainMenu(menu)
+		one = MainMenu(amenu)
 		one.add_command(label='12', command=self.test)
 		one.add_command(label='13', command=self.test)
-		menu.add_cascade(label="misc 2", menu=one)
+		amenu.add_cascade(label="misc 2", menu=one)
 
 		two = MainMenu(one)
 		two.add_command(label='14', command=self.test)
@@ -276,10 +277,10 @@ class _Application():
 		four.add_command(label='22', command=self.test)
 
 
-		a = MainMenu(menu)
+		a = MainMenu(amenu)
 		a.add_command(label='23', command=self.test)
 		a.add_command(label='24', command=self.test)
-		menu.add_cascade(label="misc 3", menu=a)
+		amenu.add_cascade(label="misc 3", menu=a)
 
 		b = MainMenu(a)
 		b.add_command(label='25', command=self.test)
@@ -300,7 +301,7 @@ class _Application():
 		e.add_command(label='31', command=self.test)
 		e.add_command(label='32', command=self.test)
 		d.add_cascade(label="tsen tsen tsen", menu=e)
-		menu.add_command(label='33', command=self.test)
+		amenu.add_command(label='33', command=self.test)
 
 		root.mainloop()
 
