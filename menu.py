@@ -19,6 +19,7 @@ class MainMenu(tkinter.Frame):
 		self.cascade_opened = False
 		self.column = -1
 		self.row    = -1
+		self.color_old = None
 		self.config(bg='white')
 		if not isinstance(self.parent, tkinter.Tk):
 			self.config(bg='#f0f0f0')
@@ -53,12 +54,16 @@ class MainMenu(tkinter.Frame):
 		# Enter
 		if   evetype == 7:
 			self._remove_siblings(widget.master)
+			self.color_old = widget.cget('bg')
 			toplevel.wm_deiconify()
 			toplevel.geometry(f"+{event.widget.winfo_rootx()+widget.master.winfo_width()-4}+{event.widget.winfo_rooty()}")
 			widget.config(bg='#0078d7')#0078d7
 		# Leave
 		elif evetype == 8:
-			widget.config(bg='#f0f0f0')#f0f0f0
+			if widget.cget('bg') != '#f0f0f0':
+				widget.config(bg=self.color_old)#f0f0f0
+			else:
+				widget.config(bg='#f0f0f0')#f0f0f0
 
 	def _command_hover(self, event):
 		# 8 is Leave
@@ -69,6 +74,7 @@ class MainMenu(tkinter.Frame):
 		# Enter
 		if   evetype == 7:
 			self._remove_siblings(widget.master)
+			self.color_old = widget.cget('bg')
 			if isinstance(self.parent, tkinter.Toplevel):
 				widget.config(bg='#0078d7')#0078d7
 			else:
@@ -76,24 +82,12 @@ class MainMenu(tkinter.Frame):
 		# Leave
 		elif evetype == 8:
 			if isinstance(self.parent, tkinter.Toplevel):
-				widget.config(bg='#f0f0f0')#f0f0f0
+				if widget.cget('bg') != '#f0f0f0':
+					widget.config(bg=self.color_old)
+				else:
+					widget.config(bg='#f0f0f0')#f0f0f0
 			else:
 				widget.config(bg='white')
-
-	def _get_children(self, widget):
-		alist = []
-		a = [widget, ]
-		while True:
-			if not a:
-				break
-			a = a[-1].winfo_children()
-			for i in a:
-				if isinstance(i, tkinter.Frame):
-					a = [i, ]
-				elif isinstance(i, tkinter.Toplevel):
-					a = [i, ]
-					alist.append(i)
-		return alist
 
 	def _get_masters(self, widget):
 		alist = []
@@ -105,7 +99,6 @@ class MainMenu(tkinter.Frame):
 				alist.append(a)
 		return alist
 
-	# https://stackoverflow.com/a/7290709/13170203
 	def _all_children(self, widget, finList=None, indent=0):
 		finList = finList or []
 		#print(f"{'   ' * indent}{widget=}")
@@ -116,19 +109,9 @@ class MainMenu(tkinter.Frame):
 		return finList
 
 	def _remove_siblings(self, widget):
-		for i in self._all_children(widget.master):
+		for i in self._all_children(widget):
 			if isinstance(i, tkinter.Toplevel):
 				i.withdraw()
-
-	def _do_command(self, event, command):
-		widget = event.widget
-		for i in self._get_masters(widget):
-			if isinstance(i, tkinter.Toplevel):
-				i.withdraw()
-			elif isinstance(i.master.master, tkinter.Tk):
-				i.config(bg='white', relief='flat')
-
-		command(event)
 
 	def _open_menu(self, event):
 		widget = event.widget
@@ -160,7 +143,6 @@ class MainMenu(tkinter.Frame):
 		label.config(text=text, *args, **kwargs)
 		label.bind("<Enter>", lambda e: self._another_hover(e))
 		label.bind("<Leave>", lambda e: self._another_hover(e))
-		#label.bind("<FocusOut>", self._menu_lose_focus)
 		self.bind("<FocusOut>", self._menu_lose_focus)
 		self.master.bind("<Configure>", lambda e: self._remove_siblings(self))
 
@@ -169,7 +151,7 @@ class MainMenu(tkinter.Frame):
 		if isinstance(self.parent, tkinter.Toplevel):
 			label.bind("<Enter>", self._cascade_hover)
 			label.bind("<Leave>", self._cascade_hover)
-			label.config(width=10, bg='#f0f0f0')
+			label.config(width=10, bg='#f0f0f0', *args, **kwargs)
 			self.row += 1
 		else:
 			self.column += 1
@@ -178,7 +160,7 @@ class MainMenu(tkinter.Frame):
 		row    = self.row    + 1 if self.row    < 0 else self.row
 
 		# →⇀↴⇒⇨▷▹▸
-		# adds arrows to cascaded menus
+		# test to add arrows to cascaded menus
 		if not isinstance(self.parent, tkinter.Tk):
 			tkinter.Label(self, text='▸').grid(sticky='se', column=1, row=row)
 
@@ -195,7 +177,8 @@ class MainMenu(tkinter.Frame):
 			if self.column >= 0:
 				self.column -= 1
 			self.config(borderwidth=2, relief='groove')
-			label.config(bg='#f0f0f0')
+			if 'background' not in kwargs:
+				label.config(bg='#f0f0f0')
 		else:
 			self.column += 1
 
@@ -205,7 +188,7 @@ class MainMenu(tkinter.Frame):
 		label.grid(sticky='nsew', column=column, row=row)
 
 		if command:
-			label.bind('<Button-1>', lambda e: self._do_command(e, command))
+			label.bind('<Button-1>', lambda e: command(e))
 		return label
 
 class _Application():
