@@ -3,9 +3,9 @@ from tkinter.ttk import *
 
 
 class MainMenu(tkinter.Frame):
-	def __init__(self, master, isdropdown=False, *args, **kwargs):
+	def __init__(self, master, *args, **kwargs):
 
-		if isinstance(master, tkinter.Frame) or isdropdown:
+		if not isinstance(master, tkinter.Tk):
 			label = tkinter.Label(master, bg='white')
 			master = tkinter.Toplevel(label, bg='#f0f0f0', *args, **kwargs)
 			master.overrideredirect(True)
@@ -22,7 +22,7 @@ class MainMenu(tkinter.Frame):
 		self.config(bg='white')
 		if not isinstance(self.parent, tkinter.Tk):
 			self.config(bg='#f0f0f0')
-		self.grid(sticky='NEW', columnspan=1000, column=self.column+1, row=self.row+1)
+		self.grid(sticky='NEW', column=self.column+1, row=self.row+1)
 
 	def _another_hover(self, event):
 		# 8 is Leave
@@ -54,7 +54,7 @@ class MainMenu(tkinter.Frame):
 		if   evetype == 7:
 			self._remove_siblings(widget.master)
 			toplevel.wm_deiconify()
-			toplevel.geometry(f"+{event.widget.winfo_rootx()+widget.winfo_width()}+{event.widget.winfo_rooty()}")
+			toplevel.geometry(f"+{event.widget.winfo_rootx()+widget.master.winfo_width()-4}+{event.widget.winfo_rooty()}")
 			widget.config(bg='#0078d7')#0078d7
 		# Leave
 		elif evetype == 8:
@@ -70,14 +70,13 @@ class MainMenu(tkinter.Frame):
 		if   evetype == 7:
 			self._remove_siblings(widget.master)
 			if isinstance(self.parent, tkinter.Toplevel):
-				self.background = widget.cget('bg')
 				widget.config(bg='#0078d7')#0078d7
 			else:
 				widget.config(bg='#e5f3ff')#e5f3ff
 		# Leave
 		elif evetype == 8:
 			if isinstance(self.parent, tkinter.Toplevel):
-				widget.config(bg=self.background)#f0f0f0
+				widget.config(bg='#f0f0f0')#f0f0f0
 			else:
 				widget.config(bg='white')
 
@@ -106,18 +105,28 @@ class MainMenu(tkinter.Frame):
 				alist.append(a)
 		return alist
 
+	# https://stackoverflow.com/a/7290709/13170203
+	def _all_children(self, widget, finList=None, indent=0):
+		finList = finList or []
+		#print(f"{'   ' * indent}{widget=}")
+		children = widget.winfo_children()
+		for item in children:
+			finList.append(item)
+			self._all_children(item, finList, indent + 1)
+		return finList
+
 	def _remove_siblings(self, widget):
-		for i in widget.winfo_children():
+		for i in self._all_children(widget.master):
 			if isinstance(i, tkinter.Toplevel):
 				i.withdraw()
-			for x in self._get_children(i):
-				x.withdraw()
 
 	def _do_command(self, event, command):
 		widget = event.widget
 		for i in self._get_masters(widget):
 			if isinstance(i, tkinter.Toplevel):
 				i.withdraw()
+			elif isinstance(i.master.master, tkinter.Tk):
+				i.config(bg='white', relief='flat')
 
 		command(event)
 
@@ -151,6 +160,7 @@ class MainMenu(tkinter.Frame):
 		label.config(text=text, *args, **kwargs)
 		label.bind("<Enter>", lambda e: self._another_hover(e))
 		label.bind("<Leave>", lambda e: self._another_hover(e))
+		#label.bind("<FocusOut>", self._menu_lose_focus)
 		self.bind("<FocusOut>", self._menu_lose_focus)
 		self.master.bind("<Configure>", lambda e: self._remove_siblings(self))
 
@@ -166,6 +176,11 @@ class MainMenu(tkinter.Frame):
 
 		column = self.column + 1 if self.column < 0 else self.column
 		row    = self.row    + 1 if self.row    < 0 else self.row
+
+		# →⇀↴⇒⇨▷▹▸
+		# adds arrows to cascaded menus
+		if not isinstance(self.parent, tkinter.Tk):
+			tkinter.Label(self, text='▸').grid(sticky='se', column=1, row=row)
 
 		label.grid(sticky='nsew', column=column, row=row)
 		return label
@@ -193,41 +208,19 @@ class MainMenu(tkinter.Frame):
 			label.bind('<Button-1>', lambda e: self._do_command(e, command))
 		return label
 
-class Dropdown(MainMenu):
-	def __init__(self, master, *args, **kwargs) -> None:
-		super().__init__(master, True, *args, **kwargs)
-		master.bind('<Button-3>', self._open_menu)
-		self.master.bind('<FocusOut>', self._remove_dropdown)
-	def _remove_dropdown(self, event):
-		widget = event.widget
-		widget.withdraw()
-		self._remove_siblings(widget)
-	def _open_menu(self, event):
-		self.master.wm_deiconify()
-		self.master.geometry(f"+{event.x_root}+{event.y_root}")
-		self.master.focus()
-
 class _Application():
 	def __init__(self):
 		root = tkinter.Tk()
 		root.geometry('200x50')
 		tkinter.Label(root, text='label on root').grid(sticky='S', column=0, row=1)
 
-		dropdown = Dropdown(root)
-		dropdown.add_command(label='one', command=self.test)
+		menu = MainMenu(root)
+		menu.add_command(label='one', command=self.test)
 
-		newdrop = Dropdown(dropdown)
-		newdrop.add_command(label='two', command=self.test)
-		newdrop.add_command(label='three', command=self.test)
-		dropdown.add_cascade(label="misc", menu=newdrop)
-
-		amenu = MainMenu(root)
-		amenu.add_command(label='one', command=self.test)
-
-		newmenu = MainMenu(amenu)
+		newmenu = MainMenu(menu)
 		newmenu.add_command(label='two', command=self.test)
 		newmenu.add_command(label='three', command=self.test)
-		amenu.add_cascade(label="misc", menu=newmenu)
+		menu.add_cascade(label="misc", menu=newmenu)
 
 		nest = MainMenu(newmenu)
 		nest.add_command(label='four', command=self.test)
@@ -250,10 +243,10 @@ class _Application():
 		nest3.add_cascade(label="nest nest nest", menu=nest4)
 
 
-		one = MainMenu(amenu)
+		one = MainMenu(menu)
 		one.add_command(label='12', command=self.test)
 		one.add_command(label='13', command=self.test)
-		amenu.add_cascade(label="misc 2", menu=one)
+		menu.add_cascade(label="misc 2", menu=one)
 
 		two = MainMenu(one)
 		two.add_command(label='14', command=self.test)
@@ -277,10 +270,10 @@ class _Application():
 		four.add_command(label='22', command=self.test)
 
 
-		a = MainMenu(amenu)
+		a = MainMenu(menu)
 		a.add_command(label='23', command=self.test)
 		a.add_command(label='24', command=self.test)
-		amenu.add_cascade(label="misc 3", menu=a)
+		menu.add_cascade(label="misc 3", menu=a)
 
 		b = MainMenu(a)
 		b.add_command(label='25', command=self.test)
@@ -301,7 +294,7 @@ class _Application():
 		e.add_command(label='31', command=self.test)
 		e.add_command(label='32', command=self.test)
 		d.add_cascade(label="tsen tsen tsen", menu=e)
-		amenu.add_command(label='33', command=self.test)
+		menu.add_command(label='33', command=self.test)
 
 		root.mainloop()
 
