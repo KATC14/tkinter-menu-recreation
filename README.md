@@ -6,7 +6,7 @@ add_command and add_cascade return the label it creates incase more binding is w
 
 ## Drop down menu
 root has bind `<FocusOut>` to remove context menu
-# example
+<!--# example
 ```python
 def test(event):
     print('state ', event.state)
@@ -27,7 +27,7 @@ dropdown.add_cascade(label="cascade", menu=newdrop)
 root.mainloop()
 ```
 
-## menu recreation
+## menu recreation-->
 
 root has bind `<Configure>` to remove cascades when moving window
 it has to .grid on root to column and row 0
