@@ -56,7 +56,16 @@ class MainMenu(tkinter.Frame):
 			self._remove_siblings(widget.master)
 			self.color_old = widget.cget('bg')
 			toplevel.wm_deiconify()
-			toplevel.geometry(f"+{event.widget.winfo_rootx()+widget.master.winfo_width()-4}+{event.widget.winfo_rooty()}")
+
+			toplevel_width = toplevel.winfo_width()
+			screen_width   = toplevel.winfo_screenwidth()
+			master_width   = widget.master.winfo_width()
+			width          = widget.winfo_rootx() + master_width - 4
+
+			if width + toplevel_width > screen_width:
+				width -= master_width + toplevel_width - 4
+
+			toplevel.geometry(f"+{width}+{widget.winfo_rooty()}")
 			widget.config(bg='#0078d7')#0078d7
 		# Leave
 		elif evetype == 8:
@@ -177,7 +186,7 @@ class MainMenu(tkinter.Frame):
 			if self.column >= 0:
 				self.column -= 1
 			self.config(borderwidth=2, relief='groove')
-			if 'background' not in kwargs:
+			if not kwargs.get('background'):
 				label.config(bg='#f0f0f0')
 		else:
 			self.column += 1
