@@ -46,7 +46,7 @@ class MainMenu(tkinter.Frame):
 			toplevel.wm_deiconify()
 			toplevel.geometry(f"+{event.widget.winfo_rootx()}+{event.widget.winfo_rooty()+21}")
 
-	def _cascade_hover(self, event):
+	def _cascade_hover(self, event, temp=None):
 		evetype = int(event.type)
 		widget = event.widget
 		toplevel = widget.winfo_children()[0]
@@ -67,12 +67,15 @@ class MainMenu(tkinter.Frame):
 
 			toplevel.geometry(f"+{width}+{widget.winfo_rooty()}")
 			widget.config(bg='#0078d7')#0078d7
+			if temp: temp.config(bg='#0078d7')#e5f3ff
 		# Leave
 		elif evetype == 8:
 			if widget.cget('bg') != '#f0f0f0':
 				widget.config(bg=self.color_old)#f0f0f0
+				if temp: temp.config(bg=self.color_old)#e5f3ff
 			else:
 				widget.config(bg='#f0f0f0')#f0f0f0
+				if temp: temp.config(bg='#f0f0f0')#e5f3ff
 
 	def _command_hover(self, event):
 		# 8 is Leave
@@ -148,19 +151,11 @@ class MainMenu(tkinter.Frame):
 
 	def add_cascade(self, label, menu, *args, **kwargs):
 		text = label
-		label = menu.master.master
-		label.config(text=text, *args, **kwargs)
-		label.bind("<Enter>", lambda e: self._another_hover(e))
-		label.bind("<Leave>", lambda e: self._another_hover(e))
-		self.bind("<FocusOut>", self._menu_lose_focus)
-		self.master.bind("<Configure>", lambda e: self._remove_siblings(self))
-
-		label.bind("<Button-1>", self._open_menu)
+		label:tkinter.Label = menu.master.master
+		label.config(text=text, anchor='w', *args, **kwargs)
+		temp = None
 
 		if isinstance(self.parent, tkinter.Toplevel):
-			label.bind("<Enter>", self._cascade_hover)
-			label.bind("<Leave>", self._cascade_hover)
-			label.config(width=10, bg='#f0f0f0', *args, **kwargs)
 			self.row += 1
 		else:
 			self.column += 1
@@ -171,13 +166,26 @@ class MainMenu(tkinter.Frame):
 		# →⇀↴⇒⇨▷▹▸
 		# test to add arrows to cascaded menus
 		if not isinstance(self.parent, tkinter.Tk):
-			tkinter.Label(self, text='▸').grid(sticky='se', column=1, row=row)
+			temp = tkinter.Label(self, text='▸')
+			temp.grid(sticky='se', column=1, row=row)
+
+		label.bind("<Enter>", self._another_hover)
+		label.bind("<Leave>", self._another_hover)
+		self.bind("<FocusOut>", self._menu_lose_focus)
+		self.master.bind("<Configure>", lambda e: self._remove_siblings(self))
+
+		if isinstance(self.parent, tkinter.Toplevel):
+			label.bind("<Enter>", lambda e: self._cascade_hover(e, temp))
+			label.bind("<Leave>", lambda e: self._cascade_hover(e, temp))
+			label.config(padx=20, bg='#f0f0f0', *args, **kwargs)
+
+		label.bind("<Button-1>", self._open_menu)
 
 		label.grid(sticky='nsew', column=column, row=row)
 		return label
 
 	def add_command(self, label=None, command=None, *args, **kwargs):
-		label = tkinter.Label(self, text=label, bg='white', *args, **kwargs)
+		label = tkinter.Label(self, text=label, anchor='w', bg='white', *args, **kwargs)
 		label.bind("<Enter>", self._command_hover)
 		label.bind("<Leave>", self._command_hover)
 
@@ -187,7 +195,7 @@ class MainMenu(tkinter.Frame):
 				self.column -= 1
 			self.config(borderwidth=2, relief='groove')
 			if not kwargs.get('background'):
-				label.config(bg='#f0f0f0')
+				label.config(padx=20, bg='#f0f0f0')
 		else:
 			self.column += 1
 
@@ -217,7 +225,7 @@ class _Application():
 		nest = MainMenu(newmenu)
 		nest.add_command(label='four', command=self.test)
 		nest.add_command(label='five', command=self.test)
-		newmenu.add_cascade(label="nest", menu=nest)
+		newmenu.add_cascade(label="nest this is a really long string that is really long", menu=nest)
 
 		nest2 = MainMenu(newmenu)
 		nest2.add_command(label='six', command=self.test)
